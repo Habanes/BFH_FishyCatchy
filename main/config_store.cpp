@@ -60,10 +60,6 @@ void SanitizeConfig(AppConfig* cfg) {
     cfg->queue_length = 48;
   }
 
-  if (cfg->led_brightness > 255) {
-    cfg->led_brightness = 96;
-  }
-
   if (cfg->led_idle_pattern > static_cast<uint8_t>(LedPattern::kRainbow)) {
     cfg->led_idle_pattern = static_cast<uint8_t>(LedPattern::kBreath);
   }

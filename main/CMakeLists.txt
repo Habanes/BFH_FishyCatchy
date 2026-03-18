@@ -14,6 +14,7 @@ idf_component_register(
     esp_http_server
     esp_netif
     nvs_flash
+    esp_driver_gpio
     driver
-    led_strip
+    espressif__led_strip
 )
