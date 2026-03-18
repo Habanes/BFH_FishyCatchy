@@ -1,16 +1,20 @@
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "app_types.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
-#include "esp_err.h"
-
-class ConfigStore {
-public:
-    static esp_err_t init();
-    static esp_err_t load(Config& out_config);
-    static esp_err_t save(const Config& config);
-    static Config defaults();
-
-private:
-    static esp_err_t validate(const Config& config);
+struct SharedConfigStore {
+  AppConfig config;
+  SemaphoreHandle_t mutex;
+  uint32_t version;
 };
+
+bool ConfigStore_Init(SharedConfigStore* store);
+bool ConfigStore_GetCopy(SharedConfigStore* store, AppConfig* out_config,
+                         uint32_t* out_version);
+bool ConfigStore_UpdateAndPersist(SharedConfigStore* store,
+                                  const AppConfig* new_config);

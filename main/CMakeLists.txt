@@ -1,16 +1,19 @@
 idf_component_register(
-    SRCS
-        "main.cpp"
-        "config_store.cpp"
-        "strike_detector.cpp"
-        "web_config.cpp"
-    INCLUDE_DIRS
-        "."
-    REQUIRES
-        nvs_flash
-        esp_event
-        esp_netif
-        esp_wifi
-        esp_http_server
-        json
+  SRCS
+    "main.cpp"
+    "config_store.cpp"
+    "system_state.cpp"
+    "sensor_task.cpp"
+    "processor_task.cpp"
+    "led_task.cpp"
+    "wifi_task.cpp"
+  INCLUDE_DIRS
+    "."
+  REQUIRES
+    esp_wifi
+    esp_http_server
+    esp_netif
+    nvs_flash
+    driver
+    led_strip
 )

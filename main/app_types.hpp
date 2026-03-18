@@ -2,50 +2,82 @@
 
 #include <stdint.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "freertos/queue.h"
+// Board pins for the custom ESP32 Pico v3 design.
+namespace BoardPins {
+constexpr int kLedData = 25;
+constexpr int kMotorWake = 19;
+constexpr int kMotorEnable = 20;
+constexpr int kMotorReverse = 4;
+constexpr int kI2cSda = 21;
+constexpr int kI2cScl = 22;
+}  // namespace BoardPins
 
 enum class DetectionAlgorithm : uint8_t {
-    SingleThreshold = 0,
-    DensityThreshold = 1,
-    CumulativeThreshold = 2,
+  kSingleSpike = 0,
+  kDenseSpikes = 1,
+  kCumulative = 2,
 };
 
-struct Config {
-    uint16_t sensor_poll_ms;
-    uint32_t bite_threshold;
-    uint16_t density_window_samples;
-    uint16_t density_threshold_hits;
-    uint32_t cumulative_threshold;
-    DetectionAlgorithm algorithm;
-    uint8_t led_brightness;
-    uint8_t led_pattern_idle;
-    uint8_t led_pattern_connected;
-    uint8_t led_pattern_caught;
-    char wifi_ssid[33];
-    uint16_t wifi_shutdown_delay_sec;
+enum class LedPattern : uint8_t {
+  kSolid = 0,
+  kBreath = 1,
+  kChase = 2,
+  kPulse = 3,
+  kRainbow = 4,
+};
+
+struct AppConfig {
+  uint32_t magic;
+  uint16_t schema_version;
+
+  char wifi_ssid[33];
+  char wifi_password[65];
+
+  uint16_t wifi_shutdown_delay_s;
+  uint16_t sensor_period_ms;
+  uint16_t queue_length;
+
+  uint8_t led_brightness;
+  uint8_t led_idle_pattern;
+  uint8_t led_wifi_pattern;
+  uint8_t led_catch_pattern;
+
+  uint8_t algorithm;
+
+  uint32_t single_spike_threshold;
+  uint32_t dense_spike_threshold;
+  uint16_t dense_window_samples;
+  uint16_t dense_required_hits;
+
+  uint32_t cumulative_threshold;
+  uint16_t cumulative_window_samples;
+
+  uint16_t catch_cooldown_ms;
+  uint16_t reserved0;
+};
+
+struct SensorSample {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+  uint32_t tick_ms;
 };
 
 struct SystemState {
-    bool fish_caught;
-    bool wifi_enabled;
-    bool client_connected;
-    uint32_t catches_total;
+  bool wifi_enabled;
+  bool wifi_client_active;
+  bool fish_caught_latched;
+
+  uint32_t fish_catch_count;
+  uint32_t last_catch_tick_ms;
+  uint32_t last_web_activity_tick_ms;
+
+  uint32_t config_version_applied_sensor;
+  uint32_t config_version_applied_processor;
+  uint32_t config_version_applied_led;
 };
 
-struct ImuSample {
-    int16_t x;
-    int16_t y;
-    int16_t z;
-};
-
-constexpr EventBits_t EVENT_CONFIG_UPDATED = BIT0;
-constexpr EventBits_t EVENT_WIFI_STOP = BIT1;
-constexpr EventBits_t EVENT_CLIENT_CONNECTED = BIT2;
-constexpr EventBits_t EVENT_CLIENT_DISCONNECTED = BIT3;
-
-struct AppContext {
-    QueueHandle_t sensor_queue;
-    EventGroupHandle_t events;
-};
+constexpr uint32_t kConfigMagic = 0x46435348;       // FCSH
+constexpr uint16_t kConfigSchemaVersion = 1;
+constexpr uint16_t kMaxWindowSamples = 256;
+constexpr uint16_t kLedCount = 7;
