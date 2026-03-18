@@ -20,7 +20,7 @@ void SetDefaults(AppConfig* cfg) {
   strncpy(cfg->wifi_password, "fishycatchy", sizeof(cfg->wifi_password) - 1);
 
   cfg->wifi_shutdown_delay_s = 120;
-  cfg->sensor_period_ms = 20;
+  cfg->sensor_period_ms = 2;
   cfg->queue_length = 48;
 
   cfg->led_brightness = 96;
@@ -30,12 +30,12 @@ void SetDefaults(AppConfig* cfg) {
 
   cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kDenseSpikes);
 
-  cfg->single_spike_threshold = 120000;
-  cfg->dense_spike_threshold = 90000;
+  cfg->single_spike_threshold = 1.80f;
+  cfg->dense_spike_threshold = 1.20f;
   cfg->dense_window_samples = 20;
   cfg->dense_required_hits = 4;
 
-  cfg->cumulative_threshold = 360000;
+  cfg->cumulative_threshold = 18.0f;
   cfg->cumulative_window_samples = 20;
 
   cfg->catch_cooldown_ms = 2500;
@@ -53,8 +53,8 @@ void SanitizeConfig(AppConfig* cfg) {
   if (cfg->wifi_shutdown_delay_s < 10 || cfg->wifi_shutdown_delay_s > 1800) {
     cfg->wifi_shutdown_delay_s = 120;
   }
-  if (cfg->sensor_period_ms < 5 || cfg->sensor_period_ms > 1000) {
-    cfg->sensor_period_ms = 20;
+  if (cfg->sensor_period_ms < 1 || cfg->sensor_period_ms > 1000) {
+    cfg->sensor_period_ms = 2;
   }
   if (cfg->queue_length < 8 || cfg->queue_length > 128) {
     cfg->queue_length = 48;
@@ -74,11 +74,11 @@ void SanitizeConfig(AppConfig* cfg) {
     cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kDenseSpikes);
   }
 
-  if (cfg->single_spike_threshold < 1000) {
-    cfg->single_spike_threshold = 120000;
+  if (cfg->single_spike_threshold < 0.05f || cfg->single_spike_threshold > 50.0f) {
+    cfg->single_spike_threshold = 1.80f;
   }
-  if (cfg->dense_spike_threshold < 1000) {
-    cfg->dense_spike_threshold = 90000;
+  if (cfg->dense_spike_threshold < 0.05f || cfg->dense_spike_threshold > 50.0f) {
+    cfg->dense_spike_threshold = 1.20f;
   }
   if (cfg->dense_window_samples < 4 || cfg->dense_window_samples > kMaxWindowSamples) {
     cfg->dense_window_samples = 20;
@@ -87,8 +87,8 @@ void SanitizeConfig(AppConfig* cfg) {
     cfg->dense_required_hits = 4;
   }
 
-  if (cfg->cumulative_threshold < 1000) {
-    cfg->cumulative_threshold = 360000;
+  if (cfg->cumulative_threshold < 0.10f || cfg->cumulative_threshold > 500.0f) {
+    cfg->cumulative_threshold = 18.0f;
   }
   if (cfg->cumulative_window_samples < 4 || cfg->cumulative_window_samples > kMaxWindowSamples) {
     cfg->cumulative_window_samples = 20;

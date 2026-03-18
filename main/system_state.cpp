@@ -119,3 +119,51 @@ bool SystemState_SetConfigVersionApplied(SharedSystemState* store,
   xSemaphoreGive(store->mutex);
   return true;
 }
+
+bool SystemState_UpdateLatestSensor(SharedSystemState* store,
+                                    const SensorSample* sample) {
+  if (store == nullptr || sample == nullptr) {
+    return false;
+  }
+
+  if (xSemaphoreTake(store->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+    return false;
+  }
+
+  store->state.last_ax = sample->ax;
+  store->state.last_ay = sample->ay;
+  store->state.last_az = sample->az;
+  store->state.last_mx = sample->mx;
+  store->state.last_my = sample->my;
+  store->state.last_mz = sample->mz;
+  store->state.last_accel_valid = sample->accel_valid;
+  store->state.last_mag_valid = sample->mag_valid;
+  store->state.last_sample_tick_ms = sample->tick_ms;
+
+  xSemaphoreGive(store->mutex);
+  return true;
+}
+
+bool SystemState_UpdateProcessingMetrics(SharedSystemState* store,
+                                         float abs_axis_sum,
+                                         uint16_t dense_hits,
+                                         float cumulative_sum,
+                                         bool detected,
+                                         uint8_t algorithm) {
+  if (store == nullptr) {
+    return false;
+  }
+
+  if (xSemaphoreTake(store->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+    return false;
+  }
+
+  store->state.calc_abs_axis_sum = abs_axis_sum;
+  store->state.calc_dense_hits = dense_hits;
+  store->state.calc_cumulative_sum = cumulative_sum;
+  store->state.calc_detected = detected;
+  store->state.calc_algorithm = algorithm;
+
+  xSemaphoreGive(store->mutex);
+  return true;
+}

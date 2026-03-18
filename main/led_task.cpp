@@ -175,9 +175,6 @@ void LedTaskEntry(void* parameter) {
     if (recent_catch) {
       pattern = static_cast<LedPattern>(cfg.led_catch_pattern);
       color = {255, 50, 0};
-    } else if (state.wifi_enabled) {
-      pattern = static_cast<LedPattern>(cfg.led_wifi_pattern);
-      color = {0, 100, 255};
     }
 
     RenderPattern(strip, pattern, color, cfg.led_brightness, frame);

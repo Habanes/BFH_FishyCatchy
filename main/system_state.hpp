@@ -21,3 +21,11 @@ bool SystemState_SetConfigVersionApplied(SharedSystemState* store,
                                          uint32_t sensor_version,
                                          uint32_t processor_version,
                                          uint32_t led_version);
+bool SystemState_UpdateLatestSensor(SharedSystemState* store,
+                                    const SensorSample* sample);
+bool SystemState_UpdateProcessingMetrics(SharedSystemState* store,
+                                         float abs_axis_sum,
+                                         uint16_t dense_hits,
+                                         float cumulative_sum,
+                                         bool detected,
+                                         uint8_t algorithm);

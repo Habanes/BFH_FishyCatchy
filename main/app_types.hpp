@@ -44,12 +44,12 @@ struct AppConfig {
 
   uint8_t algorithm;
 
-  uint32_t single_spike_threshold;
-  uint32_t dense_spike_threshold;
+  float single_spike_threshold;
+  float dense_spike_threshold;
   uint16_t dense_window_samples;
   uint16_t dense_required_hits;
 
-  uint32_t cumulative_threshold;
+  float cumulative_threshold;
   uint16_t cumulative_window_samples;
 
   uint16_t catch_cooldown_ms;
@@ -57,9 +57,14 @@ struct AppConfig {
 };
 
 struct SensorSample {
-  int16_t x;
-  int16_t y;
-  int16_t z;
+  float ax;
+  float ay;
+  float az;
+  float mx;
+  float my;
+  float mz;
+  bool accel_valid;
+  bool mag_valid;
   uint32_t tick_ms;
 };
 
@@ -75,9 +80,25 @@ struct SystemState {
   uint32_t config_version_applied_sensor;
   uint32_t config_version_applied_processor;
   uint32_t config_version_applied_led;
+
+  float last_ax;
+  float last_ay;
+  float last_az;
+  float last_mx;
+  float last_my;
+  float last_mz;
+  bool last_accel_valid;
+  bool last_mag_valid;
+  uint32_t last_sample_tick_ms;
+
+  float calc_abs_axis_sum;
+  uint16_t calc_dense_hits;
+  float calc_cumulative_sum;
+  bool calc_detected;
+  uint8_t calc_algorithm;
 };
 
 constexpr uint32_t kConfigMagic = 0x46435348;       // FCSH
-constexpr uint16_t kConfigSchemaVersion = 1;
+constexpr uint16_t kConfigSchemaVersion = 2;
 constexpr uint16_t kMaxWindowSamples = 256;
 constexpr uint16_t kLedCount = 7;
