@@ -1,0 +1,16 @@
+idf_component_register(
+    SRCS
+        "main.cpp"
+        "config_store.cpp"
+        "strike_detector.cpp"
+        "web_config.cpp"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        nvs_flash
+        esp_event
+        esp_netif
+        esp_wifi
+        esp_http_server
+        json
+)

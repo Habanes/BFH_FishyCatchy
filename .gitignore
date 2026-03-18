@@ -1,0 +1,11 @@
+# ESP-IDF build outputs
+build/
+
+# Generated local configuration
+sdkconfig
+sdkconfig.old
+
+# IDE noise
+.vscode/
+*.swp
+*.swo
