@@ -1,0 +1,25 @@
+idf_component_register(
+    SRCS
+        "src/app/main_app.cpp"
+        "src/core/app_context.cpp"
+        "src/core/persistent_store.cpp"
+        "src/core/rtos_objects.cpp"
+        "src/core/sensor_data.cpp"
+        "src/core/system_config.cpp"
+        "src/core/system_state.cpp"
+        "src/tasks/led_task.cpp"
+        "src/tasks/processing_task.cpp"
+        "src/tasks/sensor_task.cpp"
+        "src/tasks/wifi_task.cpp"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        driver
+        esp_event
+        esp_http_server
+        esp_netif
+        esp_wifi
+        freertos
+        led_strip
+        nvs_flash
+)
