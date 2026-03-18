@@ -17,39 +17,42 @@ The Fishy Catchy software project is a C++ application built on FreeRTOS for a c
 
 ## Data Storage & State Management
 
-* **Persistent Config Storage:** Non-volatile memory storing constants, thresholds, and user settings.
-    * *Access Control:* Read/Write access by the WiFi Task. Read-only access by Application Tasks (values are loaded once at startup; changes require a reboot to take effect).
-    * *Concurrency:* Protected by a FreeRTOS Mutex to prevent read/write collisions during configuration updates.
-* **System State:** Volatile shared memory containing real-time system status (e.g., current sensor readings, active flags).
-    * *Access Control:* Read/Write access shared across multiple processes on both cores. 
-    * *Concurrency:* Protected by a FreeRTOS Mutex to ensure thread-safe operations and prevent race conditions.
+* **Persistent Config Storage:** Non-volatile memory storing constants (e.g., sensor polling rate, bite thresholds).
+    * *Access Control:* Read/Write access by the WiFi Task. Read-only access by Application Tasks (loaded at startup).
+    * *Concurrency:* Protected by a FreeRTOS Mutex.
+* **System State:** Volatile shared memory containing real-time system status (e.g., connection status, catch flags).
+    * *Access Control:* Read/Write access shared across multiple processes. 
+    * *Concurrency:* Protected by a FreeRTOS Mutex.
+* **Sensor Data Queue:** A fixed-size FreeRTOS Queue acting as a thread-safe pipe between the Sensor Task and Processing Task. Passes structs containing raw X, Y, and Z axis data.
 
-## Fish Strike Detection Algorithm
+## Fish Strike Detection Methodology
 
-To ensure fast execution and minimal CPU overhead on the microcontroller, the detection algorithm avoids computationally expensive operations like square roots and floating-point math. Instead of calculating the true 3D vector magnitude, the system uses a **Squared Magnitude Delta (Jerk Detection)** approach operating directly on the raw integer values from the IMU.
+The system utilizes a decoupled Producer-Consumer architecture to analyze physical movement. Raw tri-axial data is maintained in a local Circular Buffer (Ring Buffer) by the Processing Task, allowing for flexible algorithmic analysis of a sliding time window. 
 
-**The Algorithm Steps:**
-1. **Sample:** Read the raw integer acceleration values for the X, Y, and Z axes.
-2. **Square and Sum:** Calculate the squared magnitude: `M_sq = (X*X) + (Y*Y) + (Z*Z)`.
-3. **Calculate Delta (Jerk):** Compare the current squared magnitude against the previous sample's squared magnitude: `Delta = ABS(M_sq_current - M_sq_previous)`.
-4. **Evaluate:** Compare `Delta` against a predefined configurable threshold. 
-    * If `Delta > Catch_Threshold`, a fish strike is registered.
-    * *Note:* Because the algorithm evaluates the *change* in acceleration between samples rather than absolute acceleration, the static 1G force of gravity is automatically filtered out. This isolates the sudden, high-frequency jerk characteristic of a fish bite while ignoring slow, rolling wave motions.
+**Primary Algorithm (Sustained Jerk Detection):**
+1. **Calculate Delta:** Compute the squared magnitude `(X*X) + (Y*Y) + (Z*Z)` for the newest sample and calculate the absolute difference against the previous sample's squared magnitude.
+2. **Evaluate Window:** Iterate through the historical samples in the circular buffer. Count how many samples exceed the configured `Bite_Threshold`.
+3. **Trigger:** If the count exceeds the `Density_Threshold` (e.g., X high-jerk events within the last Y samples), a catch is registered.
 
 ## System Architecture & FreeRTOS Tasks
 
 ### Core 0: Communications (WiFi Core)
 * **WiFi Task:**
     * Initializes a WiFi AP on boot.
-    * Runs a timer on startup. If no user connects within the set timeframe, the WiFi radio is disabled to conserve power until the next reboot.
-    * As long as a client remains connected, the AP stays active.
-    * *Operations:* Reads/Writes to the System State to relay real-time info to the connected user and update the system on its network status. Reads/Writes to Persistent Config to allow the user to apply new settings. (Both guarded by their respective Mutexes).
+    * Runs a timer on startup. Disables the WiFi radio if no client connects within the configured timeframe.
+    * Reads/Writes to the System State to relay real-time telemetry.
+    * Reads/Writes to Persistent Config to apply user settings.
 
 ### Core 1: Application (Real-Time Core)
-* **Sensor Task:**
-    * Periodically polls the MC6470 IMU over I2C.
-    * Executes the Squared Magnitude Delta algorithm.
-    * Acquires the System State Mutex, writes the resulting event status (catch/no catch), and releases the Mutex.
+* **Sensor Task (Producer):**
+    * Wakes up at a strict periodic interval defined by the Persistent Config.
+    * Polls the MC6470 IMU over I2C for raw X, Y, and Z values.
+    * Pushes the tri-axial data struct into the FreeRTOS Sensor Data Queue.
+* **Processing Task (Consumer):**
+    * Blocks while waiting for new data in the Sensor Data Queue.
+    * Upon receiving data, pushes the X, Y, and Z values into its local Circular Buffer.
+    * Executes the detection algorithm over the current sliding window.
+    * If a catch is detected, acquires the System State Mutex, updates the catch flag, and releases the Mutex.
 * **LED Task:**
     * Periodically acquires the System State Mutex to read the current state.
-    * Drives the 7 LEDs to display specific visual patterns based on the current state (e.g., idle, active connection, fish caught).
+    * Drives the 7 LEDs to display specific visual patterns based on system status (idle, active connection, fish caught).
