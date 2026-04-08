@@ -40,7 +40,6 @@ bool SystemState_SetWifi(SharedSystemState* store, bool enabled, bool client_act
   }
 
   store->state.wifi_enabled = enabled;
-  store->state.wifi_client_active = client_active;
 
   xSemaphoreGive(store->mutex);
   return true;
@@ -55,7 +54,6 @@ bool SystemState_MarkWebActivity(SharedSystemState* store, uint32_t tick_ms) {
     return false;
   }
 
-  store->state.wifi_client_active = true;
   store->state.last_web_activity_tick_ms = tick_ms;
 
   xSemaphoreGive(store->mutex);
@@ -73,7 +71,6 @@ bool SystemState_RegisterCatch(SharedSystemState* store, uint32_t tick_ms) {
 
   store->state.fish_caught_latched = true;
   store->state.last_catch_tick_ms = tick_ms;
-  store->state.fish_catch_count += 1;
 
   xSemaphoreGive(store->mutex);
   return true;
@@ -133,11 +130,7 @@ bool SystemState_UpdateLatestSensor(SharedSystemState* store,
   store->state.last_ax = sample->ax;
   store->state.last_ay = sample->ay;
   store->state.last_az = sample->az;
-  store->state.last_mx = sample->mx;
-  store->state.last_my = sample->my;
-  store->state.last_mz = sample->mz;
   store->state.last_accel_valid = sample->accel_valid;
-  store->state.last_mag_valid = sample->mag_valid;
   store->state.last_sample_tick_ms = sample->tick_ms;
 
   xSemaphoreGive(store->mutex);
@@ -146,8 +139,7 @@ bool SystemState_UpdateLatestSensor(SharedSystemState* store,
 
 bool SystemState_UpdateProcessingMetrics(SharedSystemState* store,
                                          float abs_axis_sum,
-                                         uint16_t dense_hits,
-                                         float cumulative_sum,
+                                         float cumulative_avg,
                                          bool detected,
                                          uint8_t algorithm) {
   if (store == nullptr) {
@@ -159,8 +151,7 @@ bool SystemState_UpdateProcessingMetrics(SharedSystemState* store,
   }
 
   store->state.calc_abs_axis_sum = abs_axis_sum;
-  store->state.calc_dense_hits = dense_hits;
-  store->state.calc_cumulative_sum = cumulative_sum;
+  store->state.calc_cumulative_sum = cumulative_avg;
   store->state.calc_detected = detected;
   store->state.calc_algorithm = algorithm;
 

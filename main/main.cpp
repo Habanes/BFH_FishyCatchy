@@ -44,7 +44,8 @@ extern "C" void app_main(void) {
     return;
   }
 
-  g_sensor_queue = xQueueCreate(boot_cfg.queue_length, sizeof(SensorSample));
+  constexpr uint16_t kQueueLength = 48;
+  g_sensor_queue = xQueueCreate(kQueueLength, sizeof(SensorSample));
   if (g_sensor_queue == nullptr) {
     ESP_LOGE(kTag, "Failed to allocate sensor queue");
     return;

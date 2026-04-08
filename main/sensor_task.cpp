@@ -11,14 +11,11 @@ namespace {
 constexpr char kTag[] = "SensorTask";
 constexpr i2c_port_t kI2cPort = I2C_NUM_0;
 constexpr uint8_t kAccelAddresses[] = {0x4C, 0x6C};
-constexpr uint8_t kMagAddresses[] = {0x0C, 0x0E, 0x1E};
 constexpr uint8_t kAccelModeReg = 0x07;
 constexpr uint8_t kAccelDataReg = 0x0D;
-constexpr uint8_t kMagModeReg = 0x31;
-constexpr uint8_t kMagDataReg = 0x11;
 constexpr float kAccelLsbPerG = 1024.0f;
 constexpr float kAccelScaleCorrection = 60.0f;
-constexpr float kMagUtPerLsb = 0.15f;
+constexpr uint16_t kSensorPeriodMs = 2;
 
 struct SensorTaskContext {
   SharedConfigStore* config_store;
@@ -108,27 +105,6 @@ bool InitAccelerometer(uint8_t* out_address) {
   return false;
 }
 
-bool InitMagnetometer(uint8_t* out_address) {
-  if (out_address == nullptr) {
-    return false;
-  }
-
-  for (uint8_t address : kMagAddresses) {
-    uint8_t probe = 0;
-    if (ReadRegs(address, kMagDataReg, &probe, 1) != ESP_OK) {
-      continue;
-    }
-
-    WriteReg(address, kMagModeReg, 0x08);
-    *out_address = address;
-    ESP_LOGI(kTag, "Magnetometer detected at 0x%02X", address);
-    return true;
-  }
-
-  ESP_LOGW(kTag, "No magnetometer detected");
-  return false;
-}
-
 inline bool IsDegenerateAxis(int16_t x, int16_t y, int16_t z) {
   return (x == 0 && y == 0 && z == 0) ||
          (x == y && y == z && x != 0);
@@ -171,35 +147,6 @@ bool ReadAccelInG(uint8_t accel_address, float* out_ax, float* out_ay, float* ou
   return true;
 }
 
-bool ReadMagInUt(uint8_t mag_address, float* out_mx, float* out_my, float* out_mz) {
-  if (out_mx == nullptr || out_my == nullptr || out_mz == nullptr) {
-    return false;
-  }
-
-  uint8_t raw[8] = {};
-  if (ReadRegs(mag_address, kMagDataReg, raw, sizeof(raw)) != ESP_OK) {
-    return false;
-  }
-
-  int16_t x = static_cast<int16_t>((raw[1] << 8) | raw[0]);
-  int16_t y = static_cast<int16_t>((raw[3] << 8) | raw[2]);
-  int16_t z = static_cast<int16_t>((raw[5] << 8) | raw[4]);
-
-  if (IsDegenerateAxis(x, y, z)) {
-    x = static_cast<int16_t>((raw[0] << 8) | raw[1]);
-    y = static_cast<int16_t>((raw[2] << 8) | raw[3]);
-    z = static_cast<int16_t>((raw[4] << 8) | raw[5]);
-    if (IsDegenerateAxis(x, y, z)) {
-      return false;
-    }
-  }
-
-  *out_mx = static_cast<float>(x) * kMagUtPerLsb;
-  *out_my = static_cast<float>(y) * kMagUtPerLsb;
-  *out_mz = static_cast<float>(z) * kMagUtPerLsb;
-  return true;
-}
-
 void PushLatestSample(SensorTaskContext* ctx, const SensorSample& sample) {
   SystemState_UpdateLatestSensor(ctx->state_store, &sample);
 
@@ -223,9 +170,7 @@ void SensorTaskEntry(void* parameter) {
   bool i2c_ready = InitI2c();
 
   uint8_t accel_address = 0;
-  uint8_t mag_address = 0;
   bool accel_ready = i2c_ready && InitAccelerometer(&accel_address);
-  bool mag_ready = i2c_ready && InitMagnetometer(&mag_address);
 
   AppConfig cfg = {};
   uint32_t cfg_version = 0;
@@ -233,7 +178,6 @@ void SensorTaskEntry(void* parameter) {
   SystemState_SetConfigVersionApplied(ctx->state_store, cfg_version, 0, 0);
 
   TickType_t last_wake = xTaskGetTickCount();
-  uint32_t local_period_ms = cfg.sensor_period_ms;
 
   for (;;) {
     AppConfig latest_cfg = {};
@@ -242,7 +186,6 @@ void SensorTaskEntry(void* parameter) {
         latest_version != cfg_version) {
       cfg = latest_cfg;
       cfg_version = latest_version;
-      local_period_ms = cfg.sensor_period_ms;
       SystemState_SetConfigVersionApplied(ctx->state_store, cfg_version, 0, 0);
     }
 
@@ -256,16 +199,9 @@ void SensorTaskEntry(void* parameter) {
       }
     }
 
-    if (mag_ready) {
-      sample.mag_valid = ReadMagInUt(mag_address, &sample.mx, &sample.my, &sample.mz);
-      if (!sample.mag_valid) {
-        mag_ready = InitMagnetometer(&mag_address);
-      }
-    }
-
     PushLatestSample(ctx, sample);
 
-    TickType_t period_ticks = pdMS_TO_TICKS(local_period_ms);
+    TickType_t period_ticks = pdMS_TO_TICKS(kSensorPeriodMs);
     if (period_ticks < 1) {
       vTaskDelay(1);
       last_wake = xTaskGetTickCount();

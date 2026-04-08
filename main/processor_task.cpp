@@ -46,32 +46,20 @@ bool EvalSingleSpike(const AppConfig& cfg, float abs_axis_sum) {
   return abs_axis_sum > cfg.single_spike_threshold;
 }
 
-uint16_t CountDenseHits(const AppConfig& cfg, const FloatRingBuffer& buffer) {
-  uint16_t samples = cfg.dense_window_samples;
-  if (samples > buffer.count) {
-    samples = buffer.count;
-  }
-
-  uint16_t hits = 0;
-  for (uint16_t i = 0; i < samples; ++i) {
-    if (ReadNewest(buffer, i) >= cfg.dense_spike_threshold) {
-      hits += 1;
-    }
-  }
-  return hits;
-}
-
-float ComputeCumulativeSum(const AppConfig& cfg, const FloatRingBuffer& buffer) {
-  uint16_t samples = cfg.cumulative_window_samples;
-  if (samples > buffer.count) {
-    samples = buffer.count;
+float ComputeCumulativeAverage(const AppConfig& cfg, const FloatRingBuffer& buffer) {
+  constexpr uint16_t kSensorPeriodMs = 2;
+  uint16_t required_samples = cfg.cumulative_window_ms / kSensorPeriodMs;
+  uint16_t samples = (required_samples > buffer.count) ? buffer.count : required_samples;
+  
+  if (samples == 0) {
+    return 0.0f;
   }
 
   float sum = 0.0f;
   for (uint16_t i = 0; i < samples; ++i) {
     sum += ReadNewest(buffer, i);
   }
-  return sum;
+  return sum / static_cast<float>(samples);
 }
 
 void ProcessorTaskEntry(void* parameter) {
@@ -109,26 +97,18 @@ void ProcessorTaskEntry(void* parameter) {
     float abs_axis_sum = ComputeAbsAxisSum(sample);
     PushValue(&ring, abs_axis_sum);
 
-    uint16_t dense_hits = CountDenseHits(cfg, ring);
-    float cumulative_sum = ComputeCumulativeSum(cfg, ring);
+    float cumulative_avg = ComputeCumulativeAverage(cfg, ring);
 
     bool detected = false;
     DetectionAlgorithm algo = static_cast<DetectionAlgorithm>(cfg.algorithm);
-    switch (algo) {
-      case DetectionAlgorithm::kSingleSpike:
-        detected = EvalSingleSpike(cfg, abs_axis_sum);
-        break;
-      case DetectionAlgorithm::kDenseSpikes:
-        detected = dense_hits >= cfg.dense_required_hits;
-        break;
-      case DetectionAlgorithm::kCumulative:
-      default:
-        detected = cumulative_sum >= cfg.cumulative_threshold;
-        break;
+    if (algo == DetectionAlgorithm::kSingleSpike) {
+      detected = EvalSingleSpike(cfg, abs_axis_sum);
+    } else {
+      detected = cumulative_avg >= cfg.cumulative_threshold;
     }
 
     SystemState_UpdateProcessingMetrics(
-        ctx->state_store, abs_axis_sum, dense_hits, cumulative_sum, detected,
+        ctx->state_store, abs_axis_sum, cumulative_avg, detected,
         static_cast<uint8_t>(algo));
 
     if (!detected) {

@@ -169,12 +169,12 @@ void LedTaskEntry(void* parameter) {
       SystemState_ClearCatchLatch(ctx->state_store);
     }
 
-    LedPattern pattern = static_cast<LedPattern>(cfg.led_idle_pattern);
+    LedPattern pattern = LedPattern::kBreath;
     Rgb color = {10, 120, 30};
 
     if (recent_catch) {
-      pattern = static_cast<LedPattern>(cfg.led_catch_pattern);
-      color = {255, 50, 0};
+      pattern = LedPattern::kChase;
+      color = {255, 100, 0};
     }
 
     RenderPattern(strip, pattern, color, cfg.led_brightness, frame);

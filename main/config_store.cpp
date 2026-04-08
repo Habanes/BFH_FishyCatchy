@@ -16,27 +16,12 @@ void SetDefaults(AppConfig* cfg) {
   cfg->magic = kConfigMagic;
   cfg->schema_version = kConfigSchemaVersion;
 
-  strncpy(cfg->wifi_ssid, "FishyCatchy", sizeof(cfg->wifi_ssid) - 1);
-  strncpy(cfg->wifi_password, "fishycatchy", sizeof(cfg->wifi_password) - 1);
-
-  cfg->wifi_shutdown_delay_s = 120;
-  cfg->sensor_period_ms = 2;
-  cfg->queue_length = 48;
-
   cfg->led_brightness = 96;
-  cfg->led_idle_pattern = static_cast<uint8_t>(LedPattern::kBreath);
-  cfg->led_wifi_pattern = static_cast<uint8_t>(LedPattern::kChase);
-  cfg->led_catch_pattern = static_cast<uint8_t>(LedPattern::kPulse);
-
-  cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kDenseSpikes);
+  cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kCumulative);
 
   cfg->single_spike_threshold = 1.80f;
-  cfg->dense_spike_threshold = 1.20f;
-  cfg->dense_window_samples = 20;
-  cfg->dense_required_hits = 4;
-
   cfg->cumulative_threshold = 18.0f;
-  cfg->cumulative_window_samples = 20;
+  cfg->cumulative_window_ms = 2000;
 
   cfg->catch_cooldown_ms = 2500;
 }
@@ -47,51 +32,19 @@ void SanitizeConfig(AppConfig* cfg) {
     return;
   }
 
-  cfg->wifi_ssid[sizeof(cfg->wifi_ssid) - 1] = '\0';
-  cfg->wifi_password[sizeof(cfg->wifi_password) - 1] = '\0';
-
-  if (cfg->wifi_shutdown_delay_s < 10 || cfg->wifi_shutdown_delay_s > 1800) {
-    cfg->wifi_shutdown_delay_s = 120;
-  }
-  if (cfg->sensor_period_ms < 1 || cfg->sensor_period_ms > 1000) {
-    cfg->sensor_period_ms = 2;
-  }
-  if (cfg->queue_length < 8 || cfg->queue_length > 128) {
-    cfg->queue_length = 48;
-  }
-
-  if (cfg->led_idle_pattern > static_cast<uint8_t>(LedPattern::kRainbow)) {
-    cfg->led_idle_pattern = static_cast<uint8_t>(LedPattern::kBreath);
-  }
-  if (cfg->led_wifi_pattern > static_cast<uint8_t>(LedPattern::kRainbow)) {
-    cfg->led_wifi_pattern = static_cast<uint8_t>(LedPattern::kChase);
-  }
-  if (cfg->led_catch_pattern > static_cast<uint8_t>(LedPattern::kRainbow)) {
-    cfg->led_catch_pattern = static_cast<uint8_t>(LedPattern::kPulse);
-  }
-
   if (cfg->algorithm > static_cast<uint8_t>(DetectionAlgorithm::kCumulative)) {
-    cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kDenseSpikes);
+    cfg->algorithm = static_cast<uint8_t>(DetectionAlgorithm::kCumulative);
   }
 
   if (cfg->single_spike_threshold < 0.05f || cfg->single_spike_threshold > 50.0f) {
     cfg->single_spike_threshold = 1.80f;
   }
-  if (cfg->dense_spike_threshold < 0.05f || cfg->dense_spike_threshold > 50.0f) {
-    cfg->dense_spike_threshold = 1.20f;
-  }
-  if (cfg->dense_window_samples < 4 || cfg->dense_window_samples > kMaxWindowSamples) {
-    cfg->dense_window_samples = 20;
-  }
-  if (cfg->dense_required_hits < 1 || cfg->dense_required_hits > cfg->dense_window_samples) {
-    cfg->dense_required_hits = 4;
-  }
 
   if (cfg->cumulative_threshold < 0.10f || cfg->cumulative_threshold > 500.0f) {
     cfg->cumulative_threshold = 18.0f;
   }
-  if (cfg->cumulative_window_samples < 4 || cfg->cumulative_window_samples > kMaxWindowSamples) {
-    cfg->cumulative_window_samples = 20;
+  if (cfg->cumulative_window_ms < 100 || cfg->cumulative_window_ms > 60000) {
+    cfg->cumulative_window_ms = 2000;
   }
 
   if (cfg->catch_cooldown_ms < 100 || cfg->catch_cooldown_ms > 20000) {

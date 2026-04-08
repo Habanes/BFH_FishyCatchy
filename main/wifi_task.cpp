@@ -50,7 +50,7 @@ body {
   background: linear-gradient(160deg, #f7fbf8, var(--bg));
 }
 .wrap {
-  max-width: 980px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 20px 12px 40px;
 }
@@ -92,7 +92,7 @@ body {
 .panel.active { display: block; }
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
   padding: 16px;
 }
@@ -111,7 +111,6 @@ input, select {
   background: #fbfdfc;
   color: var(--ink);
 }
-input[readonly] { background: #eff5f2; color: #567469; }
 input:focus, select:focus {
   outline: none;
   border-color: var(--accent);
@@ -120,14 +119,14 @@ input:focus, select:focus {
 .rangeLine { display: flex; gap: 8px; align-items: center; }
 .rangeLine input[type="range"] { flex: 1; }
 .rangeLine .val {
-  width: 72px;
+  width: 80px;
   text-align: right;
   color: #2b5042;
   font-weight: 700;
 }
 .sensorGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
   padding: 16px;
 }
@@ -138,7 +137,6 @@ input:focus, select:focus {
   background: #fbfdfc;
 }
 .sensorCard h3 { margin: 0 0 8px; font-size: 0.95rem; }
-.sensorCard.wide { grid-column: span 2; }
 .sensorRow {
   display: flex;
   justify-content: space-between;
@@ -173,7 +171,7 @@ button {
   <div class="card">
     <div class="header">
       <h1>Fishy Catchy Configuration</h1>
-      <p>Settings and live sensor data run in parallel while WiFi AP is active.</p>
+      <p>Adjust detection settings while WiFi AP is active.</p>
     </div>
 
     <div class="tabs">
@@ -184,35 +182,23 @@ button {
     <div id="settings" class="panel active">
       <form id="cfgForm">
         <div class="grid">
-          <div class="field"><label>WiFi Name</label><input value="FishyCatchy" readonly tabindex="-1" /></div>
-          <div class="field"><label>WiFi Password</label><input value="fishycatchy" readonly tabindex="-1" /></div>
-
-          <div class="field"><label for="wifi_shutdown_delay_s">WiFi Shutdown Delay (s)</label><input id="wifi_shutdown_delay_s" name="wifi_shutdown_delay_s" type="number" min="10" max="1800" required /></div>
-          <div class="field"><label for="sensor_period_ms">Sensor Polling (ms)</label><input id="sensor_period_ms" name="sensor_period_ms" type="number" min="1" max="1000" required /></div>
-          <div class="field"><label for="queue_length">Queue Length</label><input id="queue_length" name="queue_length" type="number" min="8" max="128" required /></div>
-          <div class="field"><label for="catch_cooldown_ms">Catch Cooldown (ms)</label><input id="catch_cooldown_ms" name="catch_cooldown_ms" type="number" min="100" max="20000" required /></div>
-
-          <div class="field"><label for="led_brightness">LED Brightness</label><input id="led_brightness" name="led_brightness" type="number" min="0" max="255" required /></div>
-          <div class="field"><label for="led_idle_pattern">LED Idle Pattern</label><select id="led_idle_pattern" name="led_idle_pattern"><option value="0">Solid</option><option value="1">Breath</option><option value="2">Chase</option><option value="3">Pulse</option><option value="4">Rainbow</option></select></div>
-          <div class="field"><label for="led_catch_pattern">LED Catch Pattern</label><select id="led_catch_pattern" name="led_catch_pattern"><option value="0">Solid</option><option value="1">Breath</option><option value="2">Chase</option><option value="3">Pulse</option><option value="4">Rainbow</option></select></div>
-          <div class="field"><label for="algorithm">Detection Algorithm</label><select id="algorithm" name="algorithm"><option value="0">Single Peak (|x|+|y|+|z|)</option><option value="1">Dense Peaks</option><option value="2">Cumulative</option></select></div>
-
+          <div class="field"><label for="algorithm">Algorithm</label><select id="algorithm" name="algorithm"><option value="0">Single Peak</option><option value="1">Cumulative Avg</option></select></div>
+          
           <div class="field">
-            <label for="single_spike_threshold">Single Peak Threshold (g sum)</label>
+            <label for="single_spike_threshold">Single Peak (g sum)</label>
             <div class="rangeLine"><input id="single_spike_threshold" name="single_spike_threshold" type="range" min="0.1" max="12" step="0.1" /><span class="val" id="single_spike_threshold_val">0</span></div>
           </div>
+          
           <div class="field">
-            <label for="dense_spike_threshold">Dense Peak Threshold (g sum)</label>
-            <div class="rangeLine"><input id="dense_spike_threshold" name="dense_spike_threshold" type="range" min="0.1" max="12" step="0.1" /><span class="val" id="dense_spike_threshold_val">0</span></div>
+            <label for="cumulative_threshold">Cumulative Threshold</label>
+            <div class="rangeLine"><input id="cumulative_threshold" name="cumulative_threshold" type="range" min="0.2" max="20" step="0.1" /><span class="val" id="cumulative_threshold_val">0</span></div>
           </div>
-          <div class="field"><label for="dense_window_samples">Dense Window Samples</label><input id="dense_window_samples" name="dense_window_samples" type="number" min="4" max="256" /></div>
-          <div class="field"><label for="dense_required_hits">Dense Required Hits</label><input id="dense_required_hits" name="dense_required_hits" type="number" min="1" max="256" /></div>
-
-          <div class="field">
-            <label for="cumulative_threshold">Cumulative Threshold (g sum)</label>
-            <div class="rangeLine"><input id="cumulative_threshold" name="cumulative_threshold" type="range" min="0.2" max="120" step="0.2" /><span class="val" id="cumulative_threshold_val">0</span></div>
-          </div>
-          <div class="field"><label for="cumulative_window_samples">Cumulative Window Samples</label><input id="cumulative_window_samples" name="cumulative_window_samples" type="number" min="4" max="256" /></div>
+          
+          <div class="field"><label for="cumulative_window_ms">Window Time (ms)</label><input id="cumulative_window_ms" name="cumulative_window_ms" type="number" min="100" max="60000" step="100" required /></div>
+          
+          <div class="field"><label for="catch_cooldown_ms">Catch Cooldown (ms)</label><input id="catch_cooldown_ms" name="catch_cooldown_ms" type="number" min="100" max="20000" step="100" required /></div>
+          
+          <div class="field"><label for="led_brightness">LED Brightness</label><input id="led_brightness" name="led_brightness" type="number" min="0" max="255" required /></div>
         </div>
 
         <div class="footer">
@@ -232,25 +218,10 @@ button {
           <div class="sensorRow"><span>Valid</span><strong id="accel_valid">-</strong></div>
         </div>
         <div class="sensorCard">
-          <h3>Magnetometer (uT)</h3>
-          <div class="sensorRow"><span>X</span><strong id="mx">-</strong></div>
-          <div class="sensorRow"><span>Y</span><strong id="my">-</strong></div>
-          <div class="sensorRow"><span>Z</span><strong id="mz">-</strong></div>
-          <div class="sensorRow"><span>Valid</span><strong id="mag_valid">-</strong></div>
-        </div>
-        <div class="sensorCard">
-          <h3>Runtime</h3>
-          <div class="sensorRow"><span>Catch Count</span><strong id="catch_count">-</strong></div>
-          <div class="sensorRow"><span>Fish Latched</span><strong id="fish_caught">-</strong></div>
-          <div class="sensorRow"><span>Sample Age</span><strong id="sample_age">-</strong></div>
-          <div class="sensorRow"><span>WiFi</span><strong id="wifi_enabled">-</strong></div>
-        </div>
-        <div class="sensorCard wide">
-          <h3>Calculated Values</h3>
-          <div class="sensorRow"><span>|x|+|y|+|z|</span><strong id="calc_abs_sum">-</strong></div>
-          <div class="sensorRow"><span>Dense Hits</span><strong id="calc_dense_hits">-</strong></div>
-          <div class="sensorRow"><span>Cumulative Sum</span><strong id="calc_cumulative_sum">-</strong></div>
-          <div class="sensorRow"><span>Detected</span><strong id="calc_detected">-</strong></div>
+          <h3>Detection</h3>
+          <div class="sensorRow"><span>Status</span><strong id="calc_detected">-</strong></div>
+          <div class="sensorRow"><span>Abs Sum</span><strong id="calc_abs_sum">-</strong></div>
+          <div class="sensorRow"><span>Avg Value</span><strong id="calc_cumulative_sum">-</strong></div>
           <div class="sensorRow"><span>Algorithm</span><strong id="calc_algorithm">-</strong></div>
         </div>
       </div>
@@ -263,10 +234,8 @@ button {
 
 <script>
 const saveFields = [
-  'wifi_shutdown_delay_s','sensor_period_ms','queue_length','led_brightness',
-  'led_idle_pattern','led_catch_pattern','algorithm','single_spike_threshold',
-  'dense_spike_threshold','dense_window_samples','dense_required_hits',
-  'cumulative_threshold','cumulative_window_samples','catch_cooldown_ms'
+  'algorithm','single_spike_threshold','cumulative_threshold',
+  'cumulative_window_ms','catch_cooldown_ms','led_brightness'
 ];
 
 function setTab(tabName) {
@@ -281,15 +250,14 @@ function fmt(v, digits=3) {
 
 function algoName(v) {
   if (v === 0) return 'Single Peak';
-  if (v === 1) return 'Dense Peaks';
-  if (v === 2) return 'Cumulative';
+  if (v === 1) return 'Cumulative Avg';
   return '-';
 }
 
 function linkRange(id) {
   const range = document.getElementById(id);
   const out = document.getElementById(id + '_val');
-  const refresh = () => out.textContent = Number(range.value).toFixed(2);
+  const refresh = () => out.textContent = Number(range.value).toFixed(1);
   range.addEventListener('input', refresh);
   refresh();
 }
@@ -304,34 +272,22 @@ async function loadConfig() {
   });
 
   linkRange('single_spike_threshold');
-  linkRange('dense_spike_threshold');
   linkRange('cumulative_threshold');
   document.getElementById('status').textContent = 'Ready.';
 }
 
 async function updateLive() {
   try {
-    const [sensorResp, stateResp] = await Promise.all([fetch('/sensor'), fetch('/state')]);
+    const sensorResp = await fetch('/sensor');
     const sensor = await sensorResp.json();
-    const state = await stateResp.json();
 
     document.getElementById('ax').textContent = fmt(sensor.ax);
     document.getElementById('ay').textContent = fmt(sensor.ay);
     document.getElementById('az').textContent = fmt(sensor.az);
-    document.getElementById('mx').textContent = fmt(sensor.mx, 2);
-    document.getElementById('my').textContent = fmt(sensor.my, 2);
-    document.getElementById('mz').textContent = fmt(sensor.mz, 2);
     document.getElementById('accel_valid').textContent = sensor.accel_valid ? 'yes' : 'no';
-    document.getElementById('mag_valid').textContent = sensor.mag_valid ? 'yes' : 'no';
-
-    document.getElementById('catch_count').textContent = String(state.catch_count);
-    document.getElementById('fish_caught').textContent = state.fish_caught ? 'yes' : 'no';
-    document.getElementById('wifi_enabled').textContent = state.wifi_enabled ? 'on' : 'off';
-    document.getElementById('sample_age').textContent = (sensor.sample_age_ms || 0) + ' ms';
     document.getElementById('calc_abs_sum').textContent = fmt(sensor.calc_abs_sum);
-    document.getElementById('calc_dense_hits').textContent = String(sensor.calc_dense_hits ?? '-');
     document.getElementById('calc_cumulative_sum').textContent = fmt(sensor.calc_cumulative_sum);
-    document.getElementById('calc_detected').textContent = sensor.calc_detected ? 'yes' : 'no';
+    document.getElementById('calc_detected').textContent = sensor.calc_detected ? 'DETECTED' : 'waiting';
     document.getElementById('calc_algorithm').textContent = algoName(sensor.calc_algorithm);
   } catch (_) {
   }
@@ -456,26 +412,15 @@ bool ParseFloat(const char* value, float* out) {
 }
 
 void ApplyField(AppConfig* cfg, const char* key, const char* value) {
-  if (strcmp(key, "single_spike_threshold") == 0) {
+  // Handle float fields
+  if (strcmp(key, "cumulative_threshold") == 0 || strcmp(key, "single_spike_threshold") == 0) {
     float v = 0.0f;
     if (ParseFloat(value, &v)) {
-      cfg->single_spike_threshold = v;
-    }
-    return;
-  }
-
-  if (strcmp(key, "dense_spike_threshold") == 0) {
-    float v = 0.0f;
-    if (ParseFloat(value, &v)) {
-      cfg->dense_spike_threshold = v;
-    }
-    return;
-  }
-
-  if (strcmp(key, "cumulative_threshold") == 0) {
-    float v = 0.0f;
-    if (ParseFloat(value, &v)) {
-      cfg->cumulative_threshold = v;
+      if (strcmp(key, "cumulative_threshold") == 0) {
+        cfg->cumulative_threshold = v;
+      } else {
+        cfg->single_spike_threshold = v;
+      }
     }
     return;
   }
@@ -485,17 +430,12 @@ void ApplyField(AppConfig* cfg, const char* key, const char* value) {
     return;
   }
 
-  if (strcmp(key, "wifi_shutdown_delay_s") == 0) cfg->wifi_shutdown_delay_s = static_cast<uint16_t>(n);
-  else if (strcmp(key, "sensor_period_ms") == 0) cfg->sensor_period_ms = static_cast<uint16_t>(n);
-  else if (strcmp(key, "queue_length") == 0) cfg->queue_length = static_cast<uint16_t>(n);
+  // Handle integer fields
+  if (strcmp(key, "algorithm") == 0) cfg->algorithm = static_cast<uint8_t>(n);
   else if (strcmp(key, "led_brightness") == 0) cfg->led_brightness = static_cast<uint8_t>(n);
-  else if (strcmp(key, "led_idle_pattern") == 0) cfg->led_idle_pattern = static_cast<uint8_t>(n);
-  else if (strcmp(key, "led_catch_pattern") == 0) cfg->led_catch_pattern = static_cast<uint8_t>(n);
-  else if (strcmp(key, "algorithm") == 0) cfg->algorithm = static_cast<uint8_t>(n);
-  else if (strcmp(key, "dense_window_samples") == 0) cfg->dense_window_samples = static_cast<uint16_t>(n);
-  else if (strcmp(key, "dense_required_hits") == 0) cfg->dense_required_hits = static_cast<uint16_t>(n);
-  else if (strcmp(key, "cumulative_window_samples") == 0) cfg->cumulative_window_samples = static_cast<uint16_t>(n);
+  else if (strcmp(key, "cumulative_window_ms") == 0) cfg->cumulative_window_ms = static_cast<uint16_t>(n);
   else if (strcmp(key, "catch_cooldown_ms") == 0) cfg->catch_cooldown_ms = static_cast<uint16_t>(n);
+  else if (strcmp(key, "cumulative_window_samples") == 0) cfg->cumulative_window_ms = static_cast<uint16_t>(n);  // legacy
 }
 
 void ParseFormEncoded(char* body, AppConfig* cfg) {
@@ -532,49 +472,19 @@ esp_err_t HandleConfig(httpd_req_t* req) {
     return ESP_FAIL;
   }
 
-  char body[1400];
+  char body[512];
   int len = snprintf(
       body, sizeof(body),
-      "{\"version\":%lu,\"wifi_ssid\":\"%s\",\"wifi_password\":\"%s\","
-      "\"wifi_shutdown_delay_s\":%u,\"sensor_period_ms\":%u,\"queue_length\":%u,"
-      "\"led_brightness\":%u,\"led_idle_pattern\":%u,\"led_catch_pattern\":%u,"
-      "\"algorithm\":%u,\"single_spike_threshold\":%.3f,\"dense_spike_threshold\":%.3f,"
-      "\"dense_window_samples\":%u,\"dense_required_hits\":%u,"
-      "\"cumulative_threshold\":%.3f,\"cumulative_window_samples\":%u,"
-      "\"catch_cooldown_ms\":%u}",
-      static_cast<unsigned long>(version), cfg.wifi_ssid, cfg.wifi_password,
-      cfg.wifi_shutdown_delay_s, cfg.sensor_period_ms, cfg.queue_length,
-      cfg.led_brightness, cfg.led_idle_pattern, cfg.led_catch_pattern,
-      cfg.algorithm, static_cast<double>(cfg.single_spike_threshold),
-      static_cast<double>(cfg.dense_spike_threshold), cfg.dense_window_samples,
-      cfg.dense_required_hits, static_cast<double>(cfg.cumulative_threshold),
-      cfg.cumulative_window_samples, cfg.catch_cooldown_ms);
-
-  if (len <= 0 || len >= static_cast<int>(sizeof(body))) {
-    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "serialization failed");
-    return ESP_FAIL;
-  }
-
-  httpd_resp_set_type(req, "application/json");
-  return httpd_resp_send(req, body, len);
-}
-
-esp_err_t HandleState(httpd_req_t* req) {
-  auto* ctx = static_cast<WifiTaskContext*>(req->user_ctx);
-  MarkActivity(ctx);
-
-  SystemState state = {};
-  if (!SystemState_GetCopy(ctx->state_store, &state)) {
-    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "state unavailable");
-    return ESP_FAIL;
-  }
-
-  char body[220];
-  int len = snprintf(body, sizeof(body),
-                     "{\"fish_caught\":%s,\"catch_count\":%lu,\"wifi_enabled\":%s}",
-                     state.fish_caught_latched ? "true" : "false",
-                     static_cast<unsigned long>(state.fish_catch_count),
-                     state.wifi_enabled ? "true" : "false");
+      "{\"version\":%lu,\"algorithm\":%u,\"led_brightness\":%u,"
+      "\"single_spike_threshold\":%.2f,\"cumulative_threshold\":%.2f,"
+      "\"cumulative_window_ms\":%u,\"catch_cooldown_ms\":%u}",
+      static_cast<unsigned long>(version),
+      static_cast<unsigned int>(cfg.algorithm),
+      cfg.led_brightness,
+      static_cast<double>(cfg.single_spike_threshold),
+      static_cast<double>(cfg.cumulative_threshold),
+      cfg.cumulative_window_ms,
+      cfg.catch_cooldown_ms);
 
   if (len <= 0 || len >= static_cast<int>(sizeof(body))) {
     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "serialization failed");
@@ -595,26 +505,20 @@ esp_err_t HandleSensor(httpd_req_t* req) {
     return ESP_FAIL;
   }
 
-  uint32_t now = NowMs();
-  uint32_t age = now - state.last_sample_tick_ms;
-
-  char body[700];
+  char body[512];
   int len = snprintf(
       body, sizeof(body),
-      "{\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,\"mx\":%.2f,\"my\":%.2f,\"mz\":%.2f,"
-      "\"accel_valid\":%s,\"mag_valid\":%s,\"sample_age_ms\":%lu,"
-      "\"calc_abs_sum\":%.3f,\"calc_dense_hits\":%u,\"calc_cumulative_sum\":%.3f,"
+      "{\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,"
+      "\"accel_valid\":%s,"
+      "\"calc_abs_sum\":%.3f,\"calc_cumulative_sum\":%.3f,"
       "\"calc_detected\":%s,\"calc_algorithm\":%u}",
       static_cast<double>(state.last_ax), static_cast<double>(state.last_ay),
-      static_cast<double>(state.last_az), static_cast<double>(state.last_mx),
-      static_cast<double>(state.last_my), static_cast<double>(state.last_mz),
+      static_cast<double>(state.last_az),
       state.last_accel_valid ? "true" : "false",
-      state.last_mag_valid ? "true" : "false", static_cast<unsigned long>(age),
       static_cast<double>(state.calc_abs_axis_sum),
-      static_cast<unsigned>(state.calc_dense_hits),
       static_cast<double>(state.calc_cumulative_sum),
       state.calc_detected ? "true" : "false",
-      static_cast<unsigned>(state.calc_algorithm));
+      static_cast<unsigned int>(state.calc_algorithm));
 
   if (len <= 0 || len >= static_cast<int>(sizeof(body))) {
     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "serialization failed");
@@ -684,13 +588,11 @@ bool StartServer(WifiTaskContext* ctx) {
 
   httpd_uri_t root = {"/", HTTP_GET, HandleRoot, ctx};
   httpd_uri_t cfg = {"/config", HTTP_GET, HandleConfig, ctx};
-  httpd_uri_t state = {"/state", HTTP_GET, HandleState, ctx};
   httpd_uri_t sensor = {"/sensor", HTTP_GET, HandleSensor, ctx};
   httpd_uri_t save = {"/save", HTTP_POST, HandleSave, ctx};
 
   httpd_register_uri_handler(ctx->server, &root);
   httpd_register_uri_handler(ctx->server, &cfg);
-  httpd_register_uri_handler(ctx->server, &state);
   httpd_register_uri_handler(ctx->server, &sensor);
   httpd_register_uri_handler(ctx->server, &save);
   return true;
@@ -722,15 +624,18 @@ bool StartWifiAp(WifiTaskContext* ctx, const AppConfig& cfg) {
     return false;
   }
 
+  constexpr const char* kSsid = "FishyCatchy";
+  constexpr const char* kPassword = "fishycatchy";
+
   wifi_config_t ap_cfg = {};
-  strncpy(reinterpret_cast<char*>(ap_cfg.ap.ssid), cfg.wifi_ssid, sizeof(ap_cfg.ap.ssid) - 1);
-  strncpy(reinterpret_cast<char*>(ap_cfg.ap.password), cfg.wifi_password,
+  strncpy(reinterpret_cast<char*>(ap_cfg.ap.ssid), kSsid, sizeof(ap_cfg.ap.ssid) - 1);
+  strncpy(reinterpret_cast<char*>(ap_cfg.ap.password), kPassword,
           sizeof(ap_cfg.ap.password) - 1);
-  ap_cfg.ap.ssid_len = strlen(cfg.wifi_ssid);
+  ap_cfg.ap.ssid_len = strlen(kSsid);
   ap_cfg.ap.channel = 1;
   ap_cfg.ap.max_connection = 4;
   ap_cfg.ap.beacon_interval = 100;
-  ap_cfg.ap.authmode = strlen(cfg.wifi_password) >= 8 ? WIFI_AUTH_WPA2_PSK : WIFI_AUTH_OPEN;
+  ap_cfg.ap.authmode = strlen(kPassword) >= 8 ? WIFI_AUTH_WPA2_PSK : WIFI_AUTH_OPEN;
 
   err = esp_wifi_set_mode(WIFI_MODE_AP);
   if (err == ESP_OK) err = esp_wifi_set_config(WIFI_IF_AP, &ap_cfg);
@@ -741,7 +646,7 @@ bool StartWifiAp(WifiTaskContext* ctx, const AppConfig& cfg) {
     return false;
   }
 
-  ESP_LOGI(kTag, "AP started: SSID=%s", cfg.wifi_ssid);
+  ESP_LOGI(kTag, "AP started: SSID=%s", kSsid);
   return true;
 }
 
@@ -767,8 +672,8 @@ void WifiTaskEntry(void* parameter) {
   WifiTaskContext* ctx = static_cast<WifiTaskContext*>(parameter);
 
   AppConfig cfg = {};
-  uint32_t version = 0;
-  if (!ConfigStore_GetCopy(ctx->config_store, &cfg, &version)) {
+  uint32_t cfg_version = 0;
+  if (!ConfigStore_GetCopy(ctx->config_store, &cfg, &cfg_version)) {
     ESP_LOGE(kTag, "Failed to read config at startup");
     vTaskDelete(nullptr);
     return;
@@ -793,22 +698,22 @@ void WifiTaskEntry(void* parameter) {
   for (;;) {
     AppConfig latest_cfg = {};
     uint32_t latest_version = 0;
-    uint16_t shutdown_delay_s = cfg.wifi_shutdown_delay_s;
-    if (ConfigStore_GetCopy(ctx->config_store, &latest_cfg, &latest_version)) {
+    if (ConfigStore_GetCopy(ctx->config_store, &latest_cfg, &latest_version) &&
+        latest_version != cfg_version) {
       cfg = latest_cfg;
-      shutdown_delay_s = cfg.wifi_shutdown_delay_s;
+      cfg_version = latest_version;
     }
 
     uint32_t now_ms = NowMs();
     uint32_t idle_ms = now_ms - ctx->last_activity_tick_ms;
-    uint32_t shutdown_ms = static_cast<uint32_t>(shutdown_delay_s) * 1000U;
+    constexpr uint32_t kWifiShutdownDelayMs = 120000;
 
     if (ctx->shutdown_requested) {
       ESP_LOGI(kTag, "Save completed, shutting WiFi down now");
       break;
     }
 
-    if (idle_ms >= shutdown_ms) {
+    if (idle_ms >= kWifiShutdownDelayMs) {
       ESP_LOGI(kTag, "WiFi idle timeout reached (%lu ms)", static_cast<unsigned long>(idle_ms));
       break;
     }

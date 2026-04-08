@@ -25,7 +25,6 @@ bool SystemState_UpdateLatestSensor(SharedSystemState* store,
                                     const SensorSample* sample);
 bool SystemState_UpdateProcessingMetrics(SharedSystemState* store,
                                          float abs_axis_sum,
-                                         uint16_t dense_hits,
-                                         float cumulative_sum,
+                                         float cumulative_avg,
                                          bool detected,
                                          uint8_t algorithm);
