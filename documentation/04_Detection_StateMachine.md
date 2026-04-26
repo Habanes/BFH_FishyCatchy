@@ -3,7 +3,7 @@
 Zeigt die Zustände des Erkennungssystems und die Übergänge zwischen ihnen mit klaren Kreisen und Verbindungen.
 
 ```mermaid
-graph TD
+graph LR
     START(["START"]) --> IDLE(("IDLE"))
     
     IDLE -->|System Ready| MONITORING(("MONITORING"))

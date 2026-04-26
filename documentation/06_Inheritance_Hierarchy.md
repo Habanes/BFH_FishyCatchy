@@ -213,21 +213,4 @@ classDiagram
     classDef implClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef interface fill:#b3e5fc,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef device fill:#ffe0b2,stroke:#e65100,stroke-width:2px,color:#bf360c
-
-    class Task absClass
-    class DetectionAlgorithm_Base absClass
-    class SharedStore absClass
-    class SensorDevice absClass
-    class OutputDevice absClass
-    class SensorTaskImpl implClass
-    class ProcessorTaskImpl implClass
-    class LedTaskImpl implClass
-    class WifiTaskImpl implClass
-    class SharedConfigStore_Impl implClass
-    class SharedSystemState_Impl implClass
-    class SingleSpikeAlgorithm device
-    class CumulativeAlgorithm device
-    class IMU_Device device
-    class LedDriver device
-    class MotorDriver device
 ```
