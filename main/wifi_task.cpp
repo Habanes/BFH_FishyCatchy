@@ -412,7 +412,6 @@ bool ParseFloat(const char* value, float* out) {
 }
 
 void ApplyField(AppConfig* cfg, const char* key, const char* value) {
-  // Handle float fields
   if (strcmp(key, "cumulative_threshold") == 0 || strcmp(key, "single_spike_threshold") == 0) {
     float v = 0.0f;
     if (ParseFloat(value, &v)) {
@@ -430,7 +429,6 @@ void ApplyField(AppConfig* cfg, const char* key, const char* value) {
     return;
   }
 
-  // Handle integer fields
   if (strcmp(key, "algorithm") == 0) cfg->algorithm = static_cast<uint8_t>(n);
   else if (strcmp(key, "led_brightness") == 0) cfg->led_brightness = static_cast<uint8_t>(n);
   else if (strcmp(key, "cumulative_window_ms") == 0) cfg->cumulative_window_ms = static_cast<uint16_t>(n);
